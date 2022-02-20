@@ -1,0 +1,40 @@
+version: "3"
+services:
+    #PHP Service
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: digitalocean.com/php
+        container_name: app
+        restart: unless-stopped
+        tty: true
+        environment:
+            SERVICE_NAME: app
+            SERVICE_TAGS: dev
+        volumes:
+            - ./:/var/www
+        working_dir: /var/www
+        networks:
+            - app-network
+
+    #MySQL Service
+    db:
+        image: mysql:5.7.22
+        container_name: db
+        restart: unless-stopped
+        tty: true
+        ports:
+            - "13307:3306"
+        volumes:
+            - dbdata:/var/lib/mysql/
+            - ./docker/mysql/conf/mysql-docker.cnf:/etc/mysql/my.cnf
+        environment:
+            MYSQL_DATABASE: database
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_ROOT_PASSWORD: secret
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        networks:
+            - app-network
